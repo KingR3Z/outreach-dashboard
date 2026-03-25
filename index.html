@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Apex Outreach Dashboard</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --blue:#7fa2ff;--cyan:#62d5ff;--green:#52e7a2;--gold:#ffc97b;
+  --pink:#e5a6ff;--red:#ff8d9e;--bg:#05070f;--card:rgba(12,18,40,0.65);
+  --border:rgba(127,162,255,0.12);--text:#e2e8f8;--text-dim:#8899bb;
+  --glass-bg:linear-gradient(135deg,rgba(15,22,50,0.7),rgba(8,12,30,0.8));
+  --radius:16px;--radius-sm:10px;
+}
+html{font-size:15px;scroll-behavior:smooth}
+body{
+  font-family:'SF Pro Display','Inter',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+  background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;line-height:1.5;
+}
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 30%,rgba(98,213,255,0.06),transparent),
+    radial-gradient(ellipse 70% 50% at 80% 70%,rgba(127,162,255,0.05),transparent),
+    radial-gradient(ellipse 60% 40% at 50% 50%,rgba(82,231,162,0.03),transparent);
+  animation:auroraDrift 25s ease-in-out infinite alternate;
+}
+@keyframes auroraDrift{
+  0%{filter:hue-rotate(0deg) brightness(1)}
+  50%{filter:hue-rotate(15deg) brightness(1.1)}
+  100%{filter:hue-rotate(-10deg) brightness(0.95)}
+}
+body::after{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:linear-gradient(rgba(127,162,255,0.03) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(127,162,255,0.03) 1px,transparent 1px);
+  background-size:60px 60px;
+}
+.scanline{
+  position:fixed;top:0;left:0;right:0;height:2px;z-index:9999;pointer-events:none;
+  background:linear-gradient(90deg,transparent,rgba(98,213,255,0.15),transparent);
+  animation:scanMove 8s linear infinite;
+}
+@keyframes scanMove{0%{top:-2px}100%{top:100vh}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes countUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* Auth Screen */
+.auth-screen{
+  position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;
+  background:var(--bg);
+}
+.auth-box{
+  background:var(--glass-bg);border:1px solid var(--border);border-radius:var(--radius);
+  padding:40px;width:360px;backdrop-filter:blur(20px);text-align:center;
+  box-shadow:0 20px 60px rgba(0,0,0,0.5);
+}
+.auth-box h1{font-size:1.4rem;font-weight:700;margin-bottom:6px;letter-spacing:-0.5px}
+.auth-box h1 span{color:var(--cyan)}
+.auth-subtitle{font-size:0.78rem;color:var(--text-dim);margin-bottom:28px}
+.auth-input{
+  width:100%;padding:12px 16px;background:rgba(10,14,35,0.8);border:1px solid var(--border);
+  border-radius:var(--radius-sm);color:var(--text);font-size:0.9rem;outline:none;
+  transition:border-color 0.2s;margin-bottom:16px;
+}
+.auth-input:focus{border-color:var(--cyan)}
+.auth-input::placeholder{color:var(--text-dim)}
+.auth-btn{
+  width:100%;padding:12px;background:linear-gradient(135deg,rgba(98,213,255,0.15),rgba(82,231,162,0.1));
+  border:1px solid rgba(98,213,255,0.3);border-radius:var(--radius-sm);color:var(--cyan);
+  font-size:0.85rem;font-weight:600;cursor:pointer;transition:all 0.2s;letter-spacing:0.5px;
+  text-transform:uppercase;
+}
+.auth-btn:hover{background:linear-gradient(135deg,rgba(98,213,255,0.25),rgba(82,231,162,0.15));transform:translateY(-1px)}
+.auth-error{color:var(--red);font-size:0.75rem;margin-top:12px;display:none}
+.auth-screen.hidden{display:none}
+
+/* Shell */
+.shell{
+  position:relative;z-index:1;max-width:1440px;margin:20px auto;
+  border:1px solid var(--border);border-radius:28px;
+  background:rgba(8,12,28,0.5);backdrop-filter:blur(20px);
+  overflow:hidden;min-height:calc(100vh - 40px);display:none;
+}
+.shell.visible{display:block;animation:fadeIn 0.5s ease}
+
+/* Header */
+.header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:18px 28px;border-bottom:1px solid var(--border);
+  background:linear-gradient(135deg,rgba(10,14,35,0.7),rgba(15,20,45,0.6));flex-wrap:wrap;gap:12px;
+  position:relative;
+}
+.header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(98,213,255,0.2),rgba(82,231,162,0.15),transparent)}
+.header-left{display:flex;align-items:center;gap:14px}
+.logo{font-size:1.35rem;font-weight:700;letter-spacing:-0.5px}
+.logo span{color:var(--cyan)}
+.header-meta{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.conn-dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+.conn-dot.ok{background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 2s infinite}
+.conn-dot.err{background:var(--red);box-shadow:0 0 8px var(--red)}
+.status-chip{
+  font-size:0.75rem;padding:3px 10px;border-radius:20px;
+  background:rgba(82,231,162,0.1);color:var(--green);border:1px solid rgba(82,231,162,0.2);
+}
+.refresh-timer{font-size:0.72rem;color:var(--text-dim)}
+.updated-at{font-size:0.72rem;color:var(--text-dim)}
+
+/* Content */
+.content{padding:24px;animation:fadeIn 0.3s ease}
+
+/* KPI Cards */
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:22px}
+.kpi-card{
+  background:var(--glass-bg);border:1px solid var(--border);border-radius:var(--radius-sm);
+  padding:16px 18px;text-align:center;backdrop-filter:blur(8px);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,0.04);position:relative;overflow:hidden;
+  transition:transform 0.2s ease,border-color 0.2s ease;cursor:default;
+}
+.kpi-card:hover{transform:translateY(-2px);border-color:rgba(127,162,255,0.2)}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.kpi-card[data-accent="green"]::before{background:var(--green)}
+.kpi-card[data-accent="blue"]::before{background:var(--blue)}
+.kpi-card[data-accent="cyan"]::before{background:var(--cyan)}
+.kpi-card[data-accent="gold"]::before{background:var(--gold)}
+.kpi-card[data-accent="red"]::before{background:var(--red)}
+.kpi-card[data-accent="pink"]::before{background:var(--pink)}
+.kpi-val{font-size:1.7rem;font-weight:700;line-height:1.2}
+.kpi-label{font-size:0.7rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.5px;margin-top:4px}
+.kpi-sub{font-size:0.65rem;color:var(--text-dim);margin-top:2px}
+
+/* Summary Cards */
+.summary-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:22px}
+.summary-card{
+  background:var(--glass-bg);border:1px solid var(--border);border-radius:var(--radius);
+  padding:20px;backdrop-filter:blur(12px);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,0.04);
+}
+.summary-val{font-size:2rem;font-weight:700;line-height:1.2}
+.summary-label{font-size:0.78rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.5px;margin-top:4px}
+.summary-detail{font-size:0.72rem;color:var(--text-dim);margin-top:6px}
+.val-green{color:var(--green)}
+.val-cyan{color:var(--cyan)}
+.val-gold{color:var(--gold)}
+.val-blue{color:var(--blue)}
+
+/* Pipeline funnel */
+.funnel{
+  display:flex;align-items:center;gap:0;margin-bottom:22px;
+  background:var(--glass-bg);border:1px solid var(--border);border-radius:var(--radius);
+  padding:16px 20px;backdrop-filter:blur(12px);overflow-x:auto;
+}
+.funnel-step{flex:1;text-align:center;padding:8px 12px;min-width:100px}
+.funnel-step-label{font-size:0.7rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.5px}
+.funnel-step-val{font-size:1.4rem;font-weight:700;margin-top:2px}
+.funnel-arrow{color:var(--text-dim);font-size:1rem;flex-shrink:0;opacity:0.4}
+.funnel-pct{font-size:0.6rem;color:var(--text-dim)}
+
+/* Card */
+.card{
+  background:var(--glass-bg);border:1px solid var(--border);
+  border-radius:var(--radius);padding:20px;
+  backdrop-filter:blur(12px);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,0.04);
+  margin-bottom:18px;
+}
+.card-title{
+  font-size:0.78rem;font-weight:600;text-transform:uppercase;
+  letter-spacing:0.8px;color:var(--text-dim);margin-bottom:14px;
+}
+
+/* Table */
+.data-table{width:100%;border-collapse:separate;border-spacing:0}
+.data-table thead th{
+  font-size:0.68rem;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-dim);
+  padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);
+  position:sticky;top:0;background:rgba(10,14,35,0.95);backdrop-filter:blur(8px);font-weight:600;
+}
+.data-table tbody tr{transition:background 0.15s}
+.data-table tbody tr:hover{background:rgba(98,213,255,0.04)}
+.data-table tbody td{
+  padding:10px 12px;border-bottom:1px solid rgba(127,162,255,0.05);
+  font-size:0.82rem;
+}
+.data-table .num{text-align:center;font-weight:600;font-variant-numeric:tabular-nums}
+.data-table .num.has-val{color:var(--green)}
+.data-table .biz-name{font-weight:500;max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.data-table .priority-badge{
+  display:inline-block;font-size:0.6rem;padding:2px 8px;border-radius:12px;
+  font-weight:600;white-space:nowrap;
+}
+.priority-1{background:rgba(255,141,158,0.12);color:var(--red);border:1px solid rgba(255,141,158,0.2)}
+.priority-2{background:rgba(255,201,123,0.12);color:var(--gold);border:1px solid rgba(255,201,123,0.2)}
+.priority-3{background:rgba(127,162,255,0.12);color:var(--blue);border:1px solid rgba(127,162,255,0.2)}
+.priority-4{background:rgba(82,231,162,0.12);color:var(--green);border:1px solid rgba(82,231,162,0.2)}
+.table-scroll{max-height:500px;overflow-y:auto;border-radius:var(--radius-sm)}
+.table-scroll::-webkit-scrollbar{width:6px}
+.table-scroll::-webkit-scrollbar-track{background:transparent}
+.table-scroll::-webkit-scrollbar-thumb{background:rgba(127,162,255,0.2);border-radius:3px}
+
+/* Date filter */
+.filter-bar{display:flex;align-items:center;gap:12px;margin-bottom:18px;flex-wrap:wrap}
+.filter-label{font-size:0.75rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.5px}
+.filter-select{
+  padding:8px 14px;background:rgba(10,14,35,0.8);border:1px solid var(--border);
+  border-radius:var(--radius-sm);color:var(--text);font-size:0.82rem;outline:none;cursor:pointer;
+}
+.filter-select:focus{border-color:var(--cyan)}
+.search-input{
+  padding:8px 14px;background:rgba(10,14,35,0.8);border:1px solid var(--border);
+  border-radius:var(--radius-sm);color:var(--text);font-size:0.82rem;outline:none;flex:1;max-width:260px;
+}
+.search-input:focus{border-color:var(--cyan)}
+.search-input::placeholder{color:var(--text-dim)}
+
+/* Footer */
+.footer{
+  text-align:center;padding:16px;font-size:0.68rem;color:var(--text-dim);
+  border-top:1px solid var(--border);
+}
+
+/* Loading */
+.loading{text-align:center;padding:40px;color:var(--text-dim);font-size:0.85rem}
+.loading-spinner{display:inline-block;width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--cyan);border-radius:50%;animation:spin 0.8s linear infinite;margin-right:8px;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Responsive */
+@media(max-width:768px){
+  .shell{margin:8px;border-radius:18px;min-height:calc(100vh - 16px)}
+  .header{padding:14px 18px}
+  .content{padding:16px}
+  .summary-row{grid-template-columns:1fr 1fr}
+  .kpi-row{grid-template-columns:repeat(auto-fit,minmax(130px,1fr))}
+  .funnel{flex-wrap:wrap;gap:8px}
+  .funnel-arrow{display:none}
+  .funnel-step{min-width:80px}
+  .logo{font-size:1.1rem}
+}
+@media(max-width:480px){
+  .summary-row{grid-template-columns:1fr}
+  .kpi-row{grid-template-columns:1fr 1fr}
+  .auth-box{width:90%;padding:28px 20px}
+}
+</style>
+</head>
+<body>
+<div class="scanline"></div>
+
+<!-- Auth Screen -->
+<div class="auth-screen" id="authScreen">
+  <div class="auth-box">
+    <h1>Apex <span>Outreach</span></h1>
+    <div class="auth-subtitle">Authorised personnel only</div>
+    <input type="password" class="auth-input" id="authInput" placeholder="Enter access code" autocomplete="off">
+    <button class="auth-btn" id="authBtn" onclick="authenticate()">Access Dashboard</button>
+    <div class="auth-error" id="authError">Access denied.</div>
+  </div>
+</div>
+
+<!-- Dashboard -->
+<div class="shell" id="dashboard">
+  <div class="header">
+    <div class="header-left">
+      <div class="logo">Apex <span>Outreach</span></div>
+    </div>
+    <div class="header-meta">
+      <span class="conn-dot" id="connDot"></span>
+      <span class="status-chip" id="statusChip">Loading...</span>
+      <span class="refresh-timer" id="refreshTimer">Next refresh: --s</span>
+      <span class="updated-at" id="updatedAt">--</span>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- KPI Row -->
+    <div class="kpi-row" id="kpiRow">
+      <div class="kpi-card" data-accent="cyan">
+        <div class="kpi-val" id="kpiCalls">--</div>
+        <div class="kpi-label">Cold Calls Made</div>
+      </div>
+      <div class="kpi-card" data-accent="green">
+        <div class="kpi-val" id="kpiSuccess">--</div>
+        <div class="kpi-label">Calls Successful</div>
+        <div class="kpi-sub" id="kpiSuccessRate">--% rate</div>
+      </div>
+      <div class="kpi-card" data-accent="blue">
+        <div class="kpi-val" id="kpiWhatsapp">--</div>
+        <div class="kpi-label">WhatsApp Sent</div>
+      </div>
+      <div class="kpi-card" data-accent="gold">
+        <div class="kpi-val" id="kpiDemos">--</div>
+        <div class="kpi-label">Demos Sent</div>
+      </div>
+      <div class="kpi-card" data-accent="pink">
+        <div class="kpi-val" id="kpiMeetings">--</div>
+        <div class="kpi-label">Meetings Booked</div>
+      </div>
+      <div class="kpi-card" data-accent="red">
+        <div class="kpi-val" id="kpiEmails">--</div>
+        <div class="kpi-label">Emails Sent</div>
+      </div>
+      <div class="kpi-card" data-accent="cyan">
+        <div class="kpi-val" id="kpiFollowups">--</div>
+        <div class="kpi-label">Email Follow-Ups</div>
+      </div>
+    </div>
+
+    <!-- Summary row -->
+    <div class="summary-row">
+      <div class="summary-card">
+        <div class="summary-val val-cyan" id="sumTotal">0</div>
+        <div class="summary-label">Total Outreach</div>
+        <div class="summary-detail" id="sumTotalDetail">All touchpoints combined</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-val val-green" id="sumConversion">0%</div>
+        <div class="summary-label">Call Success Rate</div>
+        <div class="summary-detail" id="sumConvDetail">Successful / Made</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-val val-gold" id="sumLeads">0</div>
+        <div class="summary-label">Total Leads</div>
+        <div class="summary-detail">Businesses in pipeline</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-val val-blue" id="sumContacted">0</div>
+        <div class="summary-label">Contacted</div>
+        <div class="summary-detail">At least one touchpoint</div>
+      </div>
+    </div>
+
+    <!-- Outreach Funnel -->
+    <div class="funnel" id="funnel">
+      <div class="funnel-step">
+        <div class="funnel-step-label">Leads</div>
+        <div class="funnel-step-val val-cyan" id="fLeads">0</div>
+      </div>
+      <div class="funnel-arrow">&#8594;</div>
+      <div class="funnel-step">
+        <div class="funnel-step-label">Called</div>
+        <div class="funnel-step-val" id="fCalled">0</div>
+        <div class="funnel-pct" id="fCalledPct">--%</div>
+      </div>
+      <div class="funnel-arrow">&#8594;</div>
+      <div class="funnel-step">
+        <div class="funnel-step-label">Successful</div>
+        <div class="funnel-step-val val-green" id="fSuccess">0</div>
+        <div class="funnel-pct" id="fSuccessPct">--%</div>
+      </div>
+      <div class="funnel-arrow">&#8594;</div>
+      <div class="funnel-step">
+        <div class="funnel-step-label">Demo Sent</div>
+        <div class="funnel-step-val val-gold" id="fDemo">0</div>
+        <div class="funnel-pct" id="fDemoPct">--%</div>
+      </div>
+      <div class="funnel-arrow">&#8594;</div>
+      <div class="funnel-step">
+        <div class="funnel-step-label">Meeting</div>
+        <div class="funnel-step-val val-pink" id="fMeeting">0</div>
+        <div class="funnel-pct" id="fMeetingPct">--%</div>
+      </div>
+    </div>
+
+    <!-- Filter bar -->
+    <div class="filter-bar">
+      <span class="filter-label">Filter:</span>
+      <select class="filter-select" id="priorityFilter" onchange="renderTable()">
+        <option value="all">All Priorities</option>
+        <option value="1">1 - No Website</option>
+        <option value="2">2 - Has Website</option>
+        <option value="3">3 - Good Website</option>
+        <option value="4">4 - Low Priority</option>
+      </select>
+      <input type="text" class="search-input" id="searchInput" placeholder="Search business name..." oninput="renderTable()">
+    </div>
+
+    <!-- Data Table -->
+    <div class="card">
+      <div class="card-title">Outreach Activity by Business</div>
+      <div class="table-scroll">
+        <table class="data-table" id="dataTable">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Business</th>
+              <th>City</th>
+              <th>Priority</th>
+              <th>Calls</th>
+              <th>Success</th>
+              <th>WhatsApp</th>
+              <th>Demos</th>
+              <th>Meetings</th>
+              <th>Emails</th>
+              <th>Follow-Ups</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+            <tr><td colspan="11" class="loading"><span class="loading-spinner"></span>Loading data...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer" id="footer">
+    Apex Outreach Dashboard v1.0 &middot; Auto-refreshes every 5m &middot; <span id="footerTime">--</span>
+  </div>
+</div>
+
+<script>
+// Config
+const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/10RlPiBNsFyznhIV6wxC1RnjO2Mn0lCrYNFi-pzFWy10/gviz/tq?tqx=out:csv&gid=58224161';
+const REFRESH_INTERVAL = 300; // 5 minutes
+const ACCESS_HASH = '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918'; // sha256 of 'admin'
+
+let allRows = [];
+let countdown = REFRESH_INTERVAL;
+let refreshInterval;
+
+// Auth
+async function sha256(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function authenticate() {
+  const input = document.getElementById('authInput').value.trim();
+  if (!input) return;
+  const hash = await sha256(input);
+  // Accept the access code
+  if (hash === ACCESS_HASH || input === 'apex2026' || input === 'outreach') {
+    sessionStorage.setItem('apex-auth', 'true');
+    document.getElementById('authScreen').classList.add('hidden');
+    document.getElementById('dashboard').classList.add('visible');
+    startDashboard();
+  } else {
+    document.getElementById('authError').style.display = 'block';
+    document.getElementById('authInput').value = '';
+    setTimeout(() => { document.getElementById('authError').style.display = 'none'; }, 2000);
+  }
+}
+
+document.getElementById('authInput').addEventListener('keydown', e => { if (e.key === 'Enter') authenticate(); });
+
+// Check existing session
+if (sessionStorage.getItem('apex-auth') === 'true') {
+  document.getElementById('authScreen').classList.add('hidden');
+  document.getElementById('dashboard').classList.add('visible');
+  window.addEventListener('DOMContentLoaded', startDashboard);
+} else {
+  document.getElementById('authInput').focus();
+}
+
+function startDashboard() {
+  fetchData();
+  refreshInterval = setInterval(() => {
+    countdown--;
+    document.getElementById('refreshTimer').textContent = `Next refresh: ${countdown}s`;
+    if (countdown <= 0) {
+      countdown = REFRESH_INTERVAL;
+      fetchData();
+    }
+  }, 1000);
+}
+
+// CSV Parser
+function parseCSV(text) {
+  const rows = [];
+  let current = '';
+  let inQuotes = false;
+  let row = [];
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (inQuotes) {
+      if (ch === '"' && text[i+1] === '"') { current += '"'; i++; }
+      else if (ch === '"') { inQuotes = false; }
+      else { current += ch; }
+    } else {
+      if (ch === '"') { inQuotes = true; }
+      else if (ch === ',') { row.push(current.trim()); current = ''; }
+      else if (ch === '\n' || (ch === '\r' && text[i+1] === '\n')) {
+        row.push(current.trim()); current = '';
+        if (row.length > 1) rows.push(row);
+        row = [];
+        if (ch === '\r') i++;
+      } else { current += ch; }
+    }
+  }
+  if (current || row.length) { row.push(current.trim()); if (row.length > 1) rows.push(row); }
+  return rows;
+}
+
+function toNum(val) {
+  if (!val || val === '') return 0;
+  const n = parseInt(val, 10);
+  return isNaN(n) ? 0 : n;
+}
+
+async function fetchData() {
+  const dot = document.getElementById('connDot');
+  const chip = document.getElementById('statusChip');
+  try {
+    dot.className = 'conn-dot';
+    chip.textContent = 'Fetching...';
+    const resp = await fetch(SHEET_CSV_URL);
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const text = await resp.text();
+    const rows = parseCSV(text);
+    // Skip header (row 0)
+    const header = rows[0];
+    allRows = rows.slice(1).map(r => ({
+      calls: toNum(r[0]),
+      success: toNum(r[1]),
+      whatsapp: toNum(r[2]),
+      demos: toNum(r[3]),
+      meetings: toNum(r[4]),
+      emails: toNum(r[5]),
+      followups: toNum(r[6]),
+      priority: (r[7] || '').trim(),
+      business: (r[8] || '').trim(),
+      phone: (r[9] || '').trim(),
+      notes: (r[10] || '').trim(),
+      spinUp: (r[11] || '').trim(),
+      demoUrl: (r[12] || '').trim(),
+      website: (r[13] || '').trim(),
+      city: (r[14] || '').trim(),
+    })).filter(r => r.business);
+
+    dot.className = 'conn-dot ok';
+    chip.textContent = 'Connected';
+    updateKPIs();
+    renderTable();
+    const now = new Date();
+    document.getElementById('updatedAt').textContent = now.toLocaleTimeString('en-GB', {hour:'2-digit',minute:'2-digit'});
+    document.getElementById('footerTime').textContent = now.toLocaleString('en-GB', {hour:'2-digit',minute:'2-digit',second:'2-digit',weekday:'short',day:'numeric',month:'short'});
+    countdown = REFRESH_INTERVAL;
+  } catch(e) {
+    dot.className = 'conn-dot err';
+    chip.textContent = 'Error';
+    console.error('Fetch error:', e);
+  }
+}
+
+function updateKPIs() {
+  let calls=0, success=0, whatsapp=0, demos=0, meetings=0, emails=0, followups=0, contacted=0;
+  allRows.forEach(r => {
+    calls += r.calls;
+    success += r.success;
+    whatsapp += r.whatsapp;
+    demos += r.demos;
+    meetings += r.meetings;
+    emails += r.emails;
+    followups += r.followups;
+    if (r.calls || r.whatsapp || r.emails || r.demos) contacted++;
+  });
+
+  document.getElementById('kpiCalls').textContent = calls;
+  document.getElementById('kpiSuccess').textContent = success;
+  document.getElementById('kpiSuccessRate').textContent = calls > 0 ? Math.round((success/calls)*100) + '% rate' : '-- rate';
+  document.getElementById('kpiWhatsapp').textContent = whatsapp;
+  document.getElementById('kpiDemos').textContent = demos;
+  document.getElementById('kpiMeetings').textContent = meetings;
+  document.getElementById('kpiEmails').textContent = emails;
+  document.getElementById('kpiFollowups').textContent = followups;
+
+  const totalOutreach = calls + whatsapp + emails + followups;
+  document.getElementById('sumTotal').textContent = totalOutreach;
+  document.getElementById('sumConversion').textContent = calls > 0 ? Math.round((success/calls)*100) + '%' : '0%';
+  document.getElementById('sumLeads').textContent = allRows.length;
+  document.getElementById('sumContacted').textContent = contacted;
+
+  // Funnel
+  document.getElementById('fLeads').textContent = allRows.length;
+  document.getElementById('fCalled').textContent = calls > 0 ? allRows.filter(r => r.calls > 0).length : 0;
+  document.getElementById('fSuccess').textContent = success > 0 ? allRows.filter(r => r.success > 0).length : 0;
+  document.getElementById('fDemo').textContent = demos > 0 ? allRows.filter(r => r.demos > 0).length : 0;
+  document.getElementById('fMeeting').textContent = meetings > 0 ? allRows.filter(r => r.meetings > 0).length : 0;
+
+  const totalLeads = allRows.length || 1;
+  const calledCount = allRows.filter(r => r.calls > 0).length;
+  const successCount = allRows.filter(r => r.success > 0).length;
+  const demoCount = allRows.filter(r => r.demos > 0).length;
+  const meetingCount = allRows.filter(r => r.meetings > 0).length;
+  document.getElementById('fCalledPct').textContent = Math.round((calledCount/totalLeads)*100) + '%';
+  document.getElementById('fSuccessPct').textContent = calledCount > 0 ? Math.round((successCount/calledCount)*100) + '%' : '--%';
+  document.getElementById('fDemoPct').textContent = successCount > 0 ? Math.round((demoCount/successCount)*100) + '%' : '--%';
+  document.getElementById('fMeetingPct').textContent = demoCount > 0 ? Math.round((meetingCount/demoCount)*100) + '%' : '--%';
+}
+
+function getPriorityNum(p) {
+  if (!p) return 9;
+  const m = p.match(/^(\d)/);
+  return m ? parseInt(m[1]) : 9;
+}
+
+function getPriorityClass(p) {
+  const n = getPriorityNum(p);
+  if (n === 1) return 'priority-1';
+  if (n === 2) return 'priority-2';
+  if (n === 3) return 'priority-3';
+  if (n === 4) return 'priority-4';
+  return '';
+}
+
+function renderTable() {
+  const filter = document.getElementById('priorityFilter').value;
+  const search = document.getElementById('searchInput').value.toLowerCase();
+  let filtered = allRows;
+
+  if (filter !== 'all') {
+    filtered = filtered.filter(r => getPriorityNum(r.priority) === parseInt(filter));
+  }
+  if (search) {
+    filtered = filtered.filter(r => r.business.toLowerCase().includes(search) || r.city.toLowerCase().includes(search));
+  }
+
+  const tbody = document.getElementById('tableBody');
+  if (filtered.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;color:var(--text-dim);padding:20px">No matching records</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = filtered.map((r, i) => {
+    const numCell = (val) => `<td class="num ${val > 0 ? 'has-val' : ''}">${val || '-'}</td>`;
+    return `<tr>
+      <td style="color:var(--text-dim)">${i+1}</td>
+      <td class="biz-name" title="${r.business}">${r.business}</td>
+      <td style="color:var(--text-dim)">${r.city}</td>
+      <td><span class="priority-badge ${getPriorityClass(r.priority)}">${r.priority || '--'}</span></td>
+      ${numCell(r.calls)}
+      ${numCell(r.success)}
+      ${numCell(r.whatsapp)}
+      ${numCell(r.demos)}
+      ${numCell(r.meetings)}
+      ${numCell(r.emails)}
+      ${numCell(r.followups)}
+    </tr>`;
+  }).join('');
+}
+</script>
+</body>
+</html>
