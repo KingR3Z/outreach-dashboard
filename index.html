@@ -215,6 +215,67 @@ body::after{
 .search-input:focus{border-color:var(--cyan)}
 .search-input::placeholder{color:var(--text-dim)}
 
+/* Revenue Countdown */
+.countdown-bar{
+  display:grid;grid-template-columns:1fr 2fr 1fr;gap:16px;margin-bottom:22px;
+  align-items:stretch;
+}
+.countdown-hero{
+  background:linear-gradient(135deg,rgba(255,201,123,0.08),rgba(255,141,158,0.06));
+  border:1px solid rgba(255,201,123,0.2);border-radius:var(--radius);
+  padding:20px;text-align:center;display:flex;flex-direction:column;justify-content:center;
+}
+.countdown-days{font-size:3rem;font-weight:800;color:var(--gold);line-height:1}
+.countdown-days-label{font-size:0.7rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;margin-top:4px}
+.countdown-deadline{font-size:0.72rem;color:var(--gold);margin-top:8px;opacity:0.8}
+.revenue-progress-card{
+  background:var(--glass-bg);border:1px solid var(--border);border-radius:var(--radius);
+  padding:20px;backdrop-filter:blur(12px);
+}
+.revenue-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px}
+.revenue-current{font-size:1.8rem;font-weight:700;color:var(--green)}
+.revenue-target{font-size:0.85rem;color:var(--text-dim)}
+.progress-track{
+  height:10px;background:rgba(127,162,255,0.08);border-radius:5px;overflow:hidden;margin-bottom:10px;
+}
+.progress-fill{
+  height:100%;border-radius:5px;transition:width 0.8s ease;
+  background:linear-gradient(90deg,var(--green),var(--cyan));
+}
+.revenue-meta{display:flex;justify-content:space-between;font-size:0.7rem;color:var(--text-dim)}
+.daily-needed-card{
+  background:linear-gradient(135deg,rgba(98,213,255,0.08),rgba(127,162,255,0.06));
+  border:1px solid rgba(98,213,255,0.2);border-radius:var(--radius);
+  padding:20px;text-align:center;display:flex;flex-direction:column;justify-content:center;
+}
+.daily-needed-val{font-size:2.2rem;font-weight:800;color:var(--cyan);line-height:1}
+.daily-needed-label{font-size:0.7rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.5px;margin-top:4px}
+.daily-needed-sub{font-size:0.68rem;color:var(--text-dim);margin-top:8px}
+
+/* Spend Tracking */
+.spend-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-bottom:22px}
+.channel-card{
+  background:var(--glass-bg);border:1px solid var(--border);border-radius:var(--radius);
+  padding:18px;backdrop-filter:blur(12px);position:relative;overflow:hidden;
+}
+.channel-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.channel-card[data-channel="whatsapp"]::before{background:var(--green)}
+.channel-card[data-channel="sms"]::before{background:var(--cyan)}
+.channel-card[data-channel="email"]::before{background:var(--blue)}
+.channel-card[data-channel="linkedin"]::before{background:var(--gold)}
+.channel-card[data-channel="social"]::before{background:var(--pink)}
+.channel-name{font-size:0.78rem;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:12px}
+.channel-name[data-channel="whatsapp"]{color:var(--green)}
+.channel-name[data-channel="sms"]{color:var(--cyan)}
+.channel-name[data-channel="email"]{color:var(--blue)}
+.channel-name[data-channel="linkedin"]{color:var(--gold)}
+.channel-name[data-channel="social"]{color:var(--pink)}
+.channel-metrics{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.ch-metric{padding:6px 0}
+.ch-metric-val{font-size:1.1rem;font-weight:700;font-variant-numeric:tabular-nums}
+.ch-metric-label{font-size:0.62rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.3px}
+.ch-section-title{font-size:0.62rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.5px;margin-top:8px;margin-bottom:4px;padding-top:8px;border-top:1px solid var(--border)}
+
 /* Footer */
 .footer{
   text-align:center;padding:16px;font-size:0.68rem;color:var(--text-dim);
@@ -233,6 +294,8 @@ body::after{
   .content{padding:16px}
   .summary-row{grid-template-columns:1fr 1fr}
   .kpi-row{grid-template-columns:repeat(auto-fit,minmax(130px,1fr))}
+  .countdown-bar{grid-template-columns:1fr}
+  .spend-grid{grid-template-columns:1fr 1fr}
   .funnel{flex-wrap:wrap;gap:8px}
   .funnel-arrow{display:none}
   .funnel-step{min-width:80px}
@@ -241,6 +304,7 @@ body::after{
 @media(max-width:480px){
   .summary-row{grid-template-columns:1fr}
   .kpi-row{grid-template-columns:1fr 1fr}
+  .spend-grid{grid-template-columns:1fr}
   .auth-box{width:90%;padding:28px 20px}
 }
 </style>
@@ -274,6 +338,33 @@ body::after{
   </div>
 
   <div class="content">
+    <!-- Revenue Countdown -->
+    <div class="countdown-bar" id="countdownBar">
+      <div class="countdown-hero">
+        <div class="countdown-days" id="countdownDays">--</div>
+        <div class="countdown-days-label">Days Remaining</div>
+        <div class="countdown-deadline">Deadline: 30 June 2026</div>
+      </div>
+      <div class="revenue-progress-card">
+        <div class="revenue-header">
+          <div class="revenue-current" id="revenueCurrent">£0</div>
+          <div class="revenue-target">Target: <strong id="revenueTarget">£3,000</strong></div>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" id="progressFill" style="width:0%"></div>
+        </div>
+        <div class="revenue-meta">
+          <span id="revenuePercent">0% of target</span>
+          <span id="revenueRemaining">£3,000 remaining</span>
+        </div>
+      </div>
+      <div class="daily-needed-card">
+        <div class="daily-needed-val" id="dailyNeeded">--</div>
+        <div class="daily-needed-label">Per Day Needed</div>
+        <div class="daily-needed-sub" id="dailyNeededSub">to hit target by 30 June</div>
+      </div>
+    </div>
+
     <!-- KPI Row -->
     <div class="kpi-row" id="kpiRow">
       <div class="kpi-card" data-accent="cyan">
@@ -363,6 +454,12 @@ body::after{
       </div>
     </div>
 
+    <!-- Spend Tracking by Channel -->
+    <div class="card" style="margin-bottom:22px">
+      <div class="card-title">Channel Performance &amp; Spend Tracking</div>
+      <div class="spend-grid" id="spendGrid"></div>
+    </div>
+
     <!-- Filter bar -->
     <div class="filter-bar">
       <span class="filter-label">Filter:</span>
@@ -418,6 +515,23 @@ const ACCESS_HASH = '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab44
 let allRows = [];
 let countdown = REFRESH_INTERVAL;
 let refreshInterval;
+
+// Revenue config — update these as revenue comes in
+const REVENUE_CONFIG = {
+  deadline: new Date('2026-06-30T23:59:59'),
+  target: 3000,
+  expenses: 0, // Add business expenses here
+  current: 0,  // Update with actual revenue
+};
+
+// Channel spend config — update costs as they become known
+const CHANNEL_CONFIG = {
+  whatsapp: { name: 'WhatsApp', costPerMsg: 0.035, validationCost: 0.005 },
+  sms: { name: 'SMS', costPerMsg: 0.04, validationCost: 0.005 },
+  email: { name: 'Email', costPerMsg: 0.001, validationCost: 0 },
+  linkedin: { name: 'LinkedIn', costPerMsg: 0, validationCost: 0 },
+  social: { name: 'Facebook / IG DMs', costPerMsg: 0, validationCost: 0 },
+};
 
 // Auth
 async function sha256(str) {
@@ -533,7 +647,9 @@ async function fetchData() {
 
     dot.className = 'conn-dot ok';
     chip.textContent = 'Connected';
+    updateCountdown();
     updateKPIs();
+    updateSpendTracking();
     renderTable();
     const now = new Date();
     document.getElementById('updatedAt').textContent = now.toLocaleTimeString('en-GB', {hour:'2-digit',minute:'2-digit'});
@@ -590,6 +706,81 @@ function updateKPIs() {
   document.getElementById('fSuccessPct').textContent = calledCount > 0 ? Math.round((successCount/calledCount)*100) + '%' : '--%';
   document.getElementById('fDemoPct').textContent = successCount > 0 ? Math.round((demoCount/successCount)*100) + '%' : '--%';
   document.getElementById('fMeetingPct').textContent = demoCount > 0 ? Math.round((meetingCount/demoCount)*100) + '%' : '--%';
+}
+
+function updateCountdown() {
+  const now = new Date();
+  const diff = REVENUE_CONFIG.deadline - now;
+  const days = Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
+  const fullTarget = REVENUE_CONFIG.target + REVENUE_CONFIG.expenses;
+  const current = REVENUE_CONFIG.current;
+  const remaining = Math.max(0, fullTarget - current);
+  const pct = fullTarget > 0 ? Math.min(100, Math.round((current / fullTarget) * 100)) : 0;
+  const daily = days > 0 ? remaining / days : remaining;
+
+  document.getElementById('countdownDays').textContent = days;
+  document.getElementById('revenueCurrent').textContent = '£' + current.toLocaleString();
+  document.getElementById('revenueTarget').textContent = '£' + fullTarget.toLocaleString();
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('revenuePercent').textContent = pct + '% of target';
+  document.getElementById('revenueRemaining').textContent = '£' + remaining.toLocaleString() + ' remaining';
+  document.getElementById('dailyNeeded').textContent = '£' + Math.ceil(daily).toLocaleString();
+
+  // Colour the countdown based on urgency
+  const daysEl = document.getElementById('countdownDays');
+  if (days <= 14) { daysEl.style.color = 'var(--red)'; }
+  else if (days <= 30) { daysEl.style.color = 'var(--gold)'; }
+}
+
+function updateSpendTracking() {
+  let totalWA = 0, totalSMS = 0, totalEmail = 0, totalLinkedin = 0, totalSocial = 0;
+  let repliesWA = 0, repliesSMS = 0, repliesEmail = 0;
+  let meetingsAll = 0;
+
+  allRows.forEach(r => {
+    totalWA += r.whatsapp;
+    totalEmail += r.emails + r.followups;
+    if (r.whatsappResponded) repliesWA += r.whatsappResponded;
+    meetingsAll += r.meetings;
+  });
+
+  const channels = [
+    {
+      key: 'whatsapp', sent: totalWA, replies: repliesWA, meetings: meetingsAll,
+      dailySent: totalWA, // TODO: track daily separately
+    },
+    { key: 'sms', sent: totalSMS, replies: repliesSMS, meetings: 0, dailySent: 0 },
+    { key: 'email', sent: totalEmail, replies: repliesEmail, meetings: 0, dailySent: 0 },
+    { key: 'linkedin', sent: totalLinkedin, replies: 0, meetings: 0, dailySent: 0 },
+    { key: 'social', sent: totalSocial, replies: 0, meetings: 0, dailySent: 0 },
+  ];
+
+  const grid = document.getElementById('spendGrid');
+  grid.innerHTML = channels.map(ch => {
+    const cfg = CHANNEL_CONFIG[ch.key];
+    const totalSpend = (ch.sent * cfg.costPerMsg) + (ch.sent * cfg.validationCost);
+    const costPerReply = ch.replies > 0 ? (totalSpend / ch.replies) : 0;
+    const costPerMeeting = ch.meetings > 0 ? (totalSpend / ch.meetings) : 0;
+    const replyRate = ch.sent > 0 ? ((ch.replies / ch.sent) * 100).toFixed(1) : '0.0';
+    const meetingRate = ch.replies > 0 ? ((ch.meetings / ch.replies) * 100).toFixed(1) : '0.0';
+
+    return `<div class="channel-card" data-channel="${ch.key}">
+      <div class="channel-name" data-channel="${ch.key}">${cfg.name}</div>
+      <div class="channel-metrics">
+        <div class="ch-metric"><div class="ch-metric-val">${ch.sent}</div><div class="ch-metric-label">Sent</div></div>
+        <div class="ch-metric"><div class="ch-metric-val">${ch.replies}</div><div class="ch-metric-label">Replies</div></div>
+        <div class="ch-metric"><div class="ch-metric-val">${replyRate}%</div><div class="ch-metric-label">Reply Rate</div></div>
+        <div class="ch-metric"><div class="ch-metric-val">${ch.meetings}</div><div class="ch-metric-label">Meetings</div></div>
+      </div>
+      <div class="ch-section-title">Costs</div>
+      <div class="channel-metrics">
+        <div class="ch-metric"><div class="ch-metric-val">£${totalSpend.toFixed(2)}</div><div class="ch-metric-label">Total Spend</div></div>
+        <div class="ch-metric"><div class="ch-metric-val">£${cfg.costPerMsg.toFixed(3)}</div><div class="ch-metric-label">Cost / Message</div></div>
+        <div class="ch-metric"><div class="ch-metric-val">${costPerReply > 0 ? '£' + costPerReply.toFixed(2) : '--'}</div><div class="ch-metric-label">Cost / Reply</div></div>
+        <div class="ch-metric"><div class="ch-metric-val">${costPerMeeting > 0 ? '£' + costPerMeeting.toFixed(2) : '--'}</div><div class="ch-metric-label">Cost / Meeting</div></div>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 function getPriorityNum(p) {
