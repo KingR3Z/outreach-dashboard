@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Apex Outreach Dashboard</title>
+<title>Olibuddy Outreach Dashboard</title>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -315,7 +315,7 @@ body::after{
 <!-- Auth Screen -->
 <div class="auth-screen" id="authScreen">
   <div class="auth-box">
-    <h1>Apex <span>Outreach</span></h1>
+    <h1>Olibuddy <span>Outreach</span></h1>
     <div class="auth-subtitle">Authorised personnel only</div>
     <input type="password" class="auth-input" id="authInput" placeholder="Enter access code" autocomplete="off">
     <button class="auth-btn" id="authBtn" onclick="authenticate()">Access Dashboard</button>
@@ -327,7 +327,7 @@ body::after{
 <div class="shell" id="dashboard">
   <div class="header">
     <div class="header-left">
-      <div class="logo">Apex <span>Outreach</span></div>
+      <div class="logo">Olibuddy <span>Outreach</span></div>
     </div>
     <div class="header-meta">
       <span class="conn-dot" id="connDot"></span>
@@ -502,7 +502,7 @@ body::after{
   </div>
 
   <div class="footer" id="footer">
-    Apex Outreach Dashboard v1.0 &middot; Auto-refreshes every 5m &middot; <span id="footerTime">--</span>
+    Olibuddy Outreach Dashboard v1.0 &middot; Auto-refreshes every 5m &middot; <span id="footerTime">--</span>
   </div>
 </div>
 
@@ -544,8 +544,8 @@ async function authenticate() {
   if (!input) return;
   const hash = await sha256(input);
   // Accept the access code
-  if (hash === ACCESS_HASH || input === 'apex2026' || input === 'outreach') {
-    sessionStorage.setItem('apex-auth', 'true');
+  if (hash === ACCESS_HASH || input === 'olibuddy2026' || input === 'outreach') {
+    sessionStorage.setItem('olibuddy-auth', 'true');
     document.getElementById('authScreen').classList.add('hidden');
     document.getElementById('dashboard').classList.add('visible');
     startDashboard();
@@ -559,7 +559,7 @@ async function authenticate() {
 document.getElementById('authInput').addEventListener('keydown', e => { if (e.key === 'Enter') authenticate(); });
 
 // Check existing session
-if (sessionStorage.getItem('apex-auth') === 'true') {
+if (sessionStorage.getItem('olibuddy-auth') === 'true') {
   document.getElementById('authScreen').classList.add('hidden');
   document.getElementById('dashboard').classList.add('visible');
   window.addEventListener('DOMContentLoaded', startDashboard);
