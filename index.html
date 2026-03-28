@@ -631,9 +631,9 @@ async function fetchData() {
       whatsappResponded: toNum(r[3]),
       whatsappVideo: toNum(r[4]),
       whatsappPersonalised: (r[5] || '').trim(),
-      demos: toNum(r[6]),
+      demos: (r[6] || '').trim().toLowerCase() === 'done' ? 1 : 0,
       meetings: toNum(r[7]),
-      emails: toNum(r[8]),
+      emails: 0, // Column disabled until email outreach launches
       followups: toNum(r[9]),
       priority: (r[10] || '').trim(),
       business: (r[11] || '').trim(),
